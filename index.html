@@ -3,39 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My GitHub Pages Website</title>
+    <title>Pong Game</title>
     <style>
-        /* Add some CSS styles for the button and for the background color change */
-        button {
-            padding: 10px 20px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            cursor: pointer;
+        /* CSS styles for the game */
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            background-color: black;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Welcome to My GitHub Pages Website</h1>
-    </header>
-    <main>
-        <p>This is a placeholder for your website content.</p>
-        <button id="changeColorButton">Change Background Color</button>
-    </main>
-    <footer>
-        <p>&copy; 2023 Your Name</p>
-    </footer>
+    <canvas id="pong" width="800" height="400"></canvas>
     <script>
-        // Add JavaScript to make the button interactive
-        const button = document.getElementById('changeColorButton');
-        const body = document.body;
+        // JavaScript code for the Pong game
+        const canvas = document.getElementById("pong");
+        const context = canvas.getContext("2d");
 
-        button.addEventListener('click', () => {
-            // Generate a random color for the background
-            const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16);
-            body.style.backgroundColor = randomColor;
-        });
+        // Paddle variables
+        const paddleWidth = 10, paddleHeight = 100;
+        let leftPaddleY = canvas.height / 2 - paddleHeight / 2;
+        let rightPaddleY = canvas.height / 2 - paddleHeight / 2;
+        const paddleSpeed = 5;
+
+        // Ball variables
+        let ballX = canvas.width / 2, ballY = canvas.height / 2;
+        let ballSpeedX = 5, ballSpeedY = 5;
+        const ballSize = 10;
+
+        function movePaddle() {
+            if (event.keyCode == 38 && leftPaddleY > 0) {
+                leftPaddleY -= paddleSpeed;
+            } else if (event.keyCode == 40 && leftPaddleY + paddleHeight < canvas.height) {
+                leftPaddleY += paddleSpeed;
+            }
+        }
+
+        function updateGameArea() {
+            // Clear the canvas
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw paddles
+            context.fillStyle = "white";
+            context.fillRect(0, leftPaddleY, paddleWidth, paddleHeight);
+            context.fillRect(canvas.width - paddleWidth, rightPaddleY, paddleWidth, paddleHeight);
+
+            // Draw ball
+            context.beginPath();
+            context.arc(ballX, ballY, ballSize, 0, Math.PI * 2);
+            context.fillStyle = "white";
+            context.fill();
+            context.closePath();
+
+            // Ball movement
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+
+            // Ball collisions with top and bottom
+            if (ballY - ballSize < 0 || ballY + ballSize > canvas.height) {
+                ballSpeedY *= -1;
+            }
+
+            // Ball collisions with paddles
+            if (ballX - ballSize < paddleWidth) {
+                if (ballY > leftPaddleY && ballY < leftPaddleY + paddleHeight) {
+                    ballSpeedX *= -1;
+                }
+            }
+
+            if (ballX + ballSize > canvas.width - paddleWidth) {
+                if (ballY > rightPaddleY && ballY < rightPaddleY + paddleHeight) {
+                    ballSpeedX *= -1;
+                }
+            }
+
+            // Ball out of bounds
+            if (ballX < 0 || ballX > canvas.width) {
+                // Reset ball position
+                ballX = canvas.width / 2;
+                ballY = canvas.height / 2;
+                ballSpeedX *= -1;
+            }
+
+            // Move right paddle (opponent)
+            if (ballY > rightPaddleY + paddleHeight / 2) {
+                rightPaddleY += paddleSpeed;
+            } else {
+                rightPaddleY -= paddleSpeed;
+            }
+
+            // Request animation frame
+            requestAnimationFrame(updateGameArea);
+        }
+
+        // Event listener for paddle movement
+        window.addEventListener("keydown", movePaddle);
+
+        // Start the game
+        updateGameArea();
     </script>
 </body>
 </html>
